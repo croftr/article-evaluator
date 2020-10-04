@@ -7,8 +7,7 @@ module.exports = {
         const response = await readerResource.getArticle('https://www.theguardian.com');
         const dom = new jsdom.JSDOM(response);
         const links = dom.window.document.querySelectorAll('a');
-        console.log('got links', links);
-
+    
         for (let link of links) {
             console.log('link: ', link.href);
             if (link.href.startsWith('http')) {
