@@ -7,6 +7,8 @@ const tags = ['trump']
 module.exports = {
     readDom: async () => {
 
+        let finalScore =0;
+
         const response = await readerResource.getArticle('https://www.theguardian.com/world');
         const dom = new jsdom.JSDOM(response);
         const links = dom.window.document.querySelectorAll('a');
@@ -19,7 +21,7 @@ module.exports = {
                 const title = dom.window.document.title;
 
                 const titleLower = title.toLowerCase();
-
+                    
                 let match = false;
 
                 for (let tag of tags) {
@@ -31,14 +33,19 @@ module.exports = {
 
                 if (match) {
                     console.log(title);
-                    const sentiment = sentimentReader.getSentiment(title);
-                    console.log(sentiment);
+                    const sentimentScore = sentimentReader.getSentiment(title);                                    
+                    const sentimentResult = sentimentScore> 0 ? 'POSITIVE' : sentimentScore === 0 ? 'NEAUTRAL' : 'NEGATIVE'
+                    finalScore = finalScore + sentimentScore;
+                    console.log(sentimentResult);
+                    console.log('Accumulated score: ', finalScore);
+                    
                 }
-
-                // console.log('Sentiment ', sentiment > 0 ? 'POSITIVE' : sentiment === 0 ? 'NEAUTRAL' : 'NEGATIVE');
-            }
+                
+            }            
         };
 
+        console.log(`Overall score for ${tags.join(' ')} is ${finalScore}`);
+        console.log(`Overall sentiment for ${tags.join(' ')} is ${finalScore> 0 ? 'POSITIVE' : finalScore === 0 ? 'NEAUTRAL' : 'NEGATIVE'}`);
 
     }
 }
