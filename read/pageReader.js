@@ -1,8 +1,11 @@
 const jsdom = require("jsdom");
 const readerResource = require("../rest/readerResource");
 const sentimentReader = require("../analyze/sentimentReader");
+const fileReader = require("./fileReader.js");
 
 const tags = ["trump"];
+
+fileReader.fileReader();
 
 module.exports = {
   readDom: async () => {
@@ -42,7 +45,7 @@ module.exports = {
               ? "NEUTRAL"
               : "NEGATIVE";
           finalScore = finalScore + sentimentScore;
-          console.log(sentimentResult);
+          // console.log(sentimentResult);
           console.log("Accumulated score: ", finalScore);
 
           results.push({ text: title, sentiment: sentimentResult });
