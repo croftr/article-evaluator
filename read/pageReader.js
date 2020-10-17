@@ -3,17 +3,24 @@ const readerResource = require("../rest/readerResource");
 const sentimentReader = require("../analyze/sentimentReader");
 
 const tags = ["trump"];
+const BASE_URL = "https://www.theguardian.com/world"
 
 module.exports = {
   readDom: async () => {
+
+    readerResource.setUp();
+    
     let finalScore = 0;
 
     const response = await readerResource.getArticle(
       "https://www.theguardian.com/world"
     );
+
+    console.log(`Scanning for articles from ${BASE_URL} containing keywords ${tags.join(',')}`);
+
     const dom = new jsdom.JSDOM(response);
     const links = dom.window.document.querySelectorAll("a");
-    let results = [];
+    const results = [];
 
     for (let link of links) {
       if (link.href.startsWith("http")) {
