@@ -3,10 +3,10 @@ var router = express.Router();
 var reader = require('../read/pageReader');
 
 /* GET users listing. */
-router.get('/', function(req, res, next) {
-  reader.readDom();
+router.get('/', function(req, res, next) {  
+  
+  reader.readDom("https://www.theguardian.com/world");
   res.send('respond with read status');
-
   
 });
 

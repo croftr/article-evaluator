@@ -18,7 +18,7 @@ module.exports = {
     const body = await response.text();
     return body;
   },
-  writeToFile: async (results) => {
+  writeToFile: async (results, pageCount) => {
     //take results and loop through
     //if positive put write to positive folder, negative to negative and neutral ignore
     //each file should only be text
@@ -28,14 +28,14 @@ module.exports = {
       console.log("result", result);
       if (result.sentiment === "POSITIVE") {
         const writeStream = await fs.createWriteStream(
-          `./results/pos/pos_${index.toString()}.txt`
+          `./results/pos/pos_${index.toString()}_page${pageCount}.txt`
         );
         writeStream.write(result.text);
         writeStream.end();
         totalFiles++;
       } else if (result.sentiment === "NEGATIVE") {
         const writeStream = await fs.createWriteStream(
-          `./results/neg/neg_${index.toString()}.txt`
+          `./results/neg/neg_${index.toString()}_page${pageCount}.txt`
         );
         writeStream.write(result.text);
         writeStream.end();

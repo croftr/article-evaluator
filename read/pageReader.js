@@ -1,29 +1,36 @@
 const jsdom = require("jsdom");
 const readerResource = require("../rest/readerResource");
 const sentimentReader = require("../analyze/sentimentReader");
+const { log } = require("debug");
 
 const tags = ["trump"];
-const BASE_URL = "https://www.theguardian.com/world"
+const pagesScanned = [];
+let pagesEvaluatedCount = 0;
+let finalScore = 0;
+let pageCount = 0;
 
-module.exports = {
-  readDom: async () => {
+const self = module.exports = {
 
-    readerResource.setUp();
+  readPage: async (baseUrl) => {   
+
+    let pageUrlsCount = 0;    
+    pageCount++;
+  
+    console.log(`Page No ${pageCount}: Scanning from ${baseUrl} for keywords ${tags.join(',')}`);
+
+    const response = await readerResource.getArticle(baseUrl);
     
-    let finalScore = 0;
-
-    const response = await readerResource.getArticle(
-      "https://www.theguardian.com/world"
-    );
-
-    console.log(`Scanning for articles from ${BASE_URL} containing keywords ${tags.join(',')}`);
-
     const dom = new jsdom.JSDOM(response);
     const links = dom.window.document.querySelectorAll("a");
     const results = [];
 
     for (let link of links) {
-      if (link.href.startsWith("http")) {
+
+      if (link.href.startsWith("http") && !pagesScanned.includes(link)) {
+
+        pagesScanned.push(link.href);
+        pageUrlsCount++;
+        
         const response = await readerResource.getArticle(link);
         const dom = new jsdom.JSDOM(response);
         const title = dom.window.document.title;
@@ -41,6 +48,8 @@ module.exports = {
 
         if (match) {
           console.log(title);
+          pagesEvaluatedCount++;
+
           const sentimentScore = sentimentReader.getSentiment(title);
           const sentimentResult =
             sentimentScore > 0
@@ -49,22 +58,37 @@ module.exports = {
               ? "NEUTRAL"
               : "NEGATIVE";
           finalScore = finalScore + sentimentScore;
+
           console.log(sentimentResult);
-          console.log("Accumulated score: ", finalScore);
+          console.log(`Pages Evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`);          
 
           results.push({ text: title, sentiment: sentimentResult });
         }
+
+        console.log(`URLS processed: page ${pageUrlsCount} total ${pagesScanned.length}`);        
       }
     }
-    const filesWritten = readerResource.writeToFile(results);
+    const filesWritten = readerResource.writeToFile(results, pageCount);
 
     console.log("files written: ", filesWritten);
-
-    console.log(`Overall score for ${tags.join(" ")} is ${finalScore}`);
+    console.log(`Overall score for ${tags.join(" ")} is ${finalScore}`);    
     console.log(
       `Overall sentiment for ${tags.join(" ")} is ${
         finalScore > 0 ? "POSITIVE" : finalScore === 0 ? "NEUTRAL" : "NEGATIVE"
       }`
     );
-  },
+
+    return pagesScanned;
+            
+  },  
+  readDom: async (baseUrl) => {
+
+    readerResource.setUp();
+    const pages = await self.readPage(baseUrl);
+
+    for (index in pages) {      
+      await self.readPage(pages[index]);
+    }
+  }
+ 
 };

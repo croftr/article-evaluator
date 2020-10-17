@@ -1,3 +1,6 @@
+#dont add the results files to source
+results
+
 # Logs
 logs
 *.log
