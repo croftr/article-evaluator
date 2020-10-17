@@ -1,7 +1,6 @@
 const jsdom = require("jsdom");
 const readerResource = require("../rest/readerResource");
 const sentimentReader = require("../analyze/sentimentReader");
-const { log } = require("debug");
 
 const tags = ["trump"];
 const pagesScanned = [];
@@ -11,22 +10,22 @@ let pageCount = 0;
 
 const self = module.exports = {
 
-  readPage: async (baseUrl) => {   
+  readPage: async ({ baseUrl, pageUrl }) => {   
 
     let pageUrlsCount = 0;    
     pageCount++;
   
-    console.log(`Page No ${pageCount}: Scanning from ${baseUrl} for keywords ${tags.join(',')}`);
+    console.log(`Page No ${pageCount}: Scanning from ${pageUrl} for keywords ${tags.join(',')}`);
 
-    const response = await readerResource.getArticle(baseUrl);
+    const response = await readerResource.getArticle(pageUrl);
     
     const dom = new jsdom.JSDOM(response);
     const links = dom.window.document.querySelectorAll("a");
-    const results = [];
+    const pageResults = [];
 
     for (let link of links) {
 
-      if (link.href.startsWith("http") && !pagesScanned.includes(link)) {
+      if (link.href.startsWith(baseUrl) && !pagesScanned.includes(link)) {
 
         pagesScanned.push(link.href);
         pageUrlsCount++;
@@ -62,13 +61,13 @@ const self = module.exports = {
           console.log(sentimentResult);
           console.log(`Pages Evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`);          
 
-          results.push({ text: title, sentiment: sentimentResult });
+          pageResults.push({ text: title, sentiment: sentimentResult });
         }
 
         console.log(`URLS processed: page ${pageUrlsCount} total ${pagesScanned.length}`);        
       }
     }
-    const filesWritten = readerResource.writeToFile(results, pageCount);
+    const filesWritten = readerResource.writeToFile(pageResults, pageCount);
 
     console.log("files written: ", filesWritten);
     console.log(`Overall score for ${tags.join(" ")} is ${finalScore}`);    
@@ -81,13 +80,13 @@ const self = module.exports = {
     return pagesScanned;
             
   },  
-  readDom: async (baseUrl) => {
+  readDom: async ( {baseUrl, pageUrl} ) => {
 
     readerResource.setUp();
-    const pages = await self.readPage(baseUrl);
+    const pages = await self.readPage({ baseUrl, pageUrl });
 
     for (index in pages) {      
-      await self.readPage(pages[index]);
+      await self.readPage({ baseUrl, pageUrl: pages[index] });
     }
   }
  
