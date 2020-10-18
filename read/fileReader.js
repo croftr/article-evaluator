@@ -26,5 +26,7 @@ module.exports = {
     const filesWritten = await readerResource.writeToFile(results);
 
     console.log("files written: ", filesWritten);
+
+    readerResource.createMLSplit();
   },
 };
