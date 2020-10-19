@@ -61,17 +61,16 @@ module.exports = {
   getFilenames: async (dir) => {
     return await readdir(dir);
   },
-
   generateFiles: async (names, dirName, FilesLength, newDir) => {
     console.log("dirName =", dirName, "Files =", FilesLength);
     for (let file = 0; file < FilesLength; file++) {
       console.log(`file = ${file}`);
 
       console.log(`oldpath = ./results/${dirName}/${names[file]}`);
-      newPath = `./results/${newDir}/${dirName}/${names[file]}`;
-      console.log(`newPath = ${newPath}`);
+      const newFilePath = `${newDir}/${names[file]}`;
+      console.log(`newPath = ${newFilePath}`);
 
-      await rename(`./results/${dirName}/${names[file]}`, newPath);
+      await rename(`./results/${dirName}/${names[file]}`, newFilePath);
     }
   },
   createMLSplit: async () => {
@@ -83,6 +82,8 @@ module.exports = {
 
     const posDir = "./results/pos";
     const negDir = "./results/neg";
+
+    //create training files
 
     let posCount = await module.exports.getDirLength(posDir);
     let negCount = await module.exports.getDirLength(negDir);
@@ -98,8 +99,20 @@ module.exports = {
 
     let negNames = await module.exports.getFilenames(negDir);
 
-    await module.exports.generateFiles(posNames, "pos", trainingFiles, "train");
-    await module.exports.generateFiles(negNames, "neg", trainingFiles, "train");
+    await module.exports.generateFiles(
+      posNames,
+      "pos",
+      trainingFiles,
+      "./results/train/pos"
+    );
+    await module.exports.generateFiles(
+      negNames,
+      "neg",
+      trainingFiles,
+      "./results/train/neg"
+    );
+
+    //create test files
 
     posCount = await module.exports.getDirLength(posDir);
     negCount = await module.exports.getDirLength(negDir);
@@ -116,13 +129,44 @@ module.exports = {
       posNames,
       "pos",
       NumberOfTestfiles,
-      "test"
+      "./results/test/pos"
     );
     await module.exports.generateFiles(
       negNames,
       "neg",
       NumberOfTestfiles,
-      "test"
+      "./results/test/neg"
+    );
+
+    //create validation files
+
+    posTrainDir = "./results/train/pos";
+    negTrainDir = "./results/train/neg";
+
+    posCount = await module.exports.getDirLength(posTrainDir);
+    negCount = await module.exports.getDirLength(negTrainDir);
+
+    numberOfFiles = posCount > negCount ? negCount : posCount;
+
+    console.log(`numberOfFiles =`, numberOfFiles);
+
+    const validateFiles = Math.floor(numberOfFiles * 0.2);
+    console.log(`validateFiles =`, validateFiles);
+
+    posNames = await module.exports.getFilenames(posTrainDir);
+    negNames = await module.exports.getFilenames(negTrainDir);
+
+    await module.exports.generateFiles(
+      posNames,
+      "train/pos",
+      validateFiles,
+      "./results/validate/pos"
+    );
+    await module.exports.generateFiles(
+      negNames,
+      "train/neg",
+      validateFiles,
+      "./results/validate/neg"
     );
   },
 };
