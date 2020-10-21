@@ -1,0 +1,11 @@
+1) Ensure you have Jupyter Notebook installed: https://jupyter.org/install
+
+2) Navigate to the Jupyter Notebook directory in cmd prompt
+
+3) Run Jupyter Notebook from command prompt: type-> Jupyter Notebook 
+
+4) Navigate to sentimentML.ipynb open and run
+
+----------------------
+
+Can actually run from VS code with the python plugin.  

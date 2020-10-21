@@ -108,3 +108,5 @@ dist
 
 results/neg/*
 results/pos/*
+
+jupyterNotebooks/data/*
