@@ -8,20 +8,16 @@ const rename = util.promisify(fs.rename);
 const BASE_DIR = "results";
 
 module.exports = {
-  setUp: async () => {
+  setUp: async (tags) => {
     if (!fs.existsSync(BASE_DIR)) {
       fs.mkdirSync(BASE_DIR);
-      fs.mkdirSync(`${BASE_DIR}/pos`);
-      fs.mkdirSync(`${BASE_DIR}/neg`);
-      fs.mkdirSync(`${BASE_DIR}/train`);
-      fs.mkdirSync(`${BASE_DIR}/train/pos`);
-      fs.mkdirSync(`${BASE_DIR}/train/neg`);
-      fs.mkdirSync(`${BASE_DIR}/test`);
-      fs.mkdirSync(`${BASE_DIR}/test/pos`);
-      fs.mkdirSync(`${BASE_DIR}/test/neg`);
-      fs.mkdirSync(`${BASE_DIR}/validate`);
-      fs.mkdirSync(`${BASE_DIR}/validate/pos`);
-      fs.mkdirSync(`${BASE_DIR}/validate/neg`);
+
+      tags.forEach(tag => {        
+        fs.mkdirSync(`${BASE_DIR}/${tag}`);
+        fs.mkdirSync(`${BASE_DIR}/${tag}/pos`);
+        fs.mkdirSync(`${BASE_DIR}/${tag}/neg`);      
+      })
+      
     }
   },
   getArticle: async (url) => {
@@ -34,14 +30,14 @@ module.exports = {
     for (const [index, result] of results.entries()) {
       if (result.sentiment === "POSITIVE") {
         const writeStream = fs.createWriteStream(
-          `./results/pos/pos_${index.toString()}_page${pageCount}.txt`
+          `./results/${result.tag}/pos/pos_${index.toString()}_page${pageCount}.txt`
         );
         writeStream.write(result.text);
         writeStream.end();
         totalFiles++;
       } else if (result.sentiment === "NEGATIVE") {
         const writeStream = fs.createWriteStream(
-          `./results/neg/neg_${index.toString()}_page${pageCount}.txt`
+          `./results/${result.tag}/neg/neg_${index.toString()}_page${pageCount}.txt`
         );
         writeStream.write(result.text);
         writeStream.end();
