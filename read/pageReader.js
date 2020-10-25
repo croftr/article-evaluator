@@ -17,7 +17,12 @@ const self = module.exports = {
   
     console.log(`Page No ${pageCount}: Scanning from ${pageUrl} for keywords ${tags.join(',')}`);
 
+   try {
     const response = await readerResource.getArticle(pageUrl);
+   } catch (e) {
+     console.error(`Failed to read from url ${pageUrl}` + e.message)
+   }
+    
     
     const dom = new jsdom.JSDOM(response);
     const links = dom.window.document.querySelectorAll("a");
@@ -59,7 +64,7 @@ const self = module.exports = {
           finalScore = finalScore + sentimentScore;
 
           console.log(sentimentResult);
-          console.log(`Pages Evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`);          
+          console.log(`Articles evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`);          
 
           pageResults.push({ text: title, sentiment: sentimentResult });
         }
