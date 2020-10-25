@@ -68,13 +68,10 @@ const self = (module.exports = {
           finalScore = finalScore + sentimentScore;
 
           console.log(sentimentResult);
-<<<<<<< HEAD
           console.log(`Articles evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`);          
-=======
           console.log(
             `Pages Evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`
           );
->>>>>>> 58bb280c93e360a308bf3f0a1e76d8e17412adff
 
           pageResults.push({ text: title, sentiment: sentimentResult });
         }
