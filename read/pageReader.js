@@ -2,7 +2,7 @@ const jsdom = require("jsdom");
 const readerResource = require("../rest/readerResource");
 const sentimentReader = require("../analyze/sentimentReader");
 
-const tags = ["food","trump","europe","virus","covid","sport","uk","police","politics","religion","drug"];
+// const tags = ["food","trump","europe","virus","covid","sport","uk","police","politics","religion","drug"];
 const pagesScanned = [];
 let pagesEvaluatedCount = 0;
 let finalScore = 0;
@@ -10,7 +10,7 @@ let pageCount = 0;
 
 const self = (module.exports = {
 
-  readPage: async ({ baseUrl, pageUrl }) => {
+  readPage: async ({ baseUrl, pageUrl, tags }) => {
     let pageUrlsCount = 0;
     pageCount++;
 
@@ -22,7 +22,7 @@ const self = (module.exports = {
 
     let response;
     try {
-      let response = await readerResource.getArticle(pageUrl);
+      response = await readerResource.getArticle(pageUrl);
     } catch (e) {
       console.error(`Failed to read from url ${pageUrl}` + e.message);
       throw e;
@@ -31,8 +31,9 @@ const self = (module.exports = {
     const dom = new jsdom.JSDOM(response);
     const links = dom.window.document.querySelectorAll("a");
     const pageResults = [];
-
+    
     for (let link of links) {    
+      
       if (link.href.startsWith(baseUrl) && !pagesScanned.includes(link)) {
         pagesScanned.push(link.href);
         pageUrlsCount++;
@@ -87,12 +88,12 @@ const self = (module.exports = {
 
     return pagesScanned;
   },
-  readDom: async ({ baseUrl, pageUrl }) => {
+  readDom: async ({ baseUrl, pageUrl, tags }) => {
     readerResource.setUp(tags);
-    const pages = await self.readPage({ baseUrl, pageUrl });
+    const pages = await self.readPage({ baseUrl, pageUrl, tags });
 
     for (index in pages) {
-      await self.readPage({ baseUrl, pageUrl: pages[index] });
+      await self.readPage({ baseUrl, pageUrl: pages[index], tags });
     }
   },
 });
