@@ -62,13 +62,13 @@ module.exports = {
     return await readdir(dir);
   },
   generateFiles: async (names, dirName, FilesLength, newDir) => {
-    console.log("dirName =", dirName, "Files =", FilesLength);
+    // console.log("dirName =", dirName, "Files =", FilesLength);
     for (let file = 0; file < FilesLength; file++) {
-      console.log(`file = ${file}`);
+      // console.log(`file = ${file}`);
 
-      console.log(`oldpath = ./results/${dirName}/${names[file]}`);
+      // console.log(`oldpath = ./results/${dirName}/${names[file]}`);
       const newFilePath = `${newDir}/${names[file]}`;
-      console.log(`newPath = ${newFilePath}`);
+      // console.log(`newPath = ${newFilePath}`);
 
       await rename(`./results/${dirName}/${names[file]}`, newFilePath);
     }

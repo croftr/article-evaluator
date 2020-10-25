@@ -11,8 +11,8 @@ let pageCount = 0;
 
 fileReader.fileReader();
 
-
 const self = (module.exports = {
+
   readPage: async ({ baseUrl, pageUrl }) => {
     let pageUrlsCount = 0;
     pageCount++;
@@ -23,13 +23,14 @@ const self = (module.exports = {
       )}`
     );
 
-   try {
-    const response = await readerResource.getArticle(pageUrl);
-   } catch (e) {
-     console.error(`Failed to read from url ${pageUrl}` + e.message)
-   }
-    
-    
+    let response;
+    try {
+      response = await readerResource.getArticle(pageUrl);
+    } catch (e) {
+      console.error(`Failed to read from url ${pageUrl}` + e.message);
+      throw e;
+    }
+
     const dom = new jsdom.JSDOM(response);
     const links = dom.window.document.querySelectorAll("a");
     const pageResults = [];
@@ -38,11 +39,10 @@ const self = (module.exports = {
       if (link.href.startsWith(baseUrl) && !pagesScanned.includes(link)) {
         pagesScanned.push(link.href);
         pageUrlsCount++;
-
-        const response = await readerResource.getArticle(link);
+        
+        const response = await readerResource.getArticle(link.href);
         const dom = new jsdom.JSDOM(response);
         const title = dom.window.document.title;
-
         const titleLower = title.toLowerCase();
 
         let match = false;
@@ -63,12 +63,12 @@ const self = (module.exports = {
             sentimentScore > 0
               ? "POSITIVE"
               : sentimentScore === 0
-              ? "NEUTRAL"
-              : "NEGATIVE";
+                ? "NEUTRAL"
+                : "NEGATIVE";
           finalScore = finalScore + sentimentScore;
 
           console.log(sentimentResult);
-          console.log(`Articles evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`);          
+          console.log(`Articles evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`);
           console.log(
             `Pages Evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`
           );
@@ -86,8 +86,7 @@ const self = (module.exports = {
     console.log("files written: ", filesWritten);
     console.log(`Overall score for ${tags.join(" ")} is ${finalScore}`);
     console.log(
-      `Overall sentiment for ${tags.join(" ")} is ${
-        finalScore > 0 ? "POSITIVE" : finalScore === 0 ? "NEUTRAL" : "NEGATIVE"
+      `Overall sentiment for ${tags.join(" ")} is ${finalScore > 0 ? "POSITIVE" : finalScore === 0 ? "NEUTRAL" : "NEGATIVE"
       }`
     );
 
