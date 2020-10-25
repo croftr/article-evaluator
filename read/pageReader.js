@@ -1,6 +1,7 @@
 const jsdom = require("jsdom");
 const readerResource = require("../rest/readerResource");
 const sentimentReader = require("../analyze/sentimentReader");
+const textNoramaliser = require("../utils/textNormaliser.js")
 
 // const tags = ["food","trump","europe","virus","covid","sport","uk","police","politics","religion","drug"];
 const pagesScanned = [];
@@ -66,7 +67,7 @@ const self = (module.exports = {
               );
             }
               
-            pageResults.push({ tag, text: title, sentiment: sentimentResult });
+            pageResults.push({ tag, text: textNoramaliser.normalise(title), sentiment: sentimentResult });
 
           }
 
