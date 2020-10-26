@@ -55,9 +55,7 @@ const self = (module.exports = {
     for (let link of links) {
       
       if (link.href.startsWith(baseUrl) && !pagesScanned.includes(link.href)) {
-
-        console.log('test ', link.href);
-
+        
         pagesScanned.push(link.href);
         pageUrlsCount++;
 
