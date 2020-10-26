@@ -3,11 +3,24 @@ const readerResource = require("../rest/readerResource");
 const sentimentReader = require("../analyze/sentimentReader");
 const textNoramaliser = require("../utils/textNormaliser.js")
 
-// const tags = ["food","trump","europe","virus","covid","sport","uk","police","politics","religion","drug"];
 const pagesScanned = [];
 let pagesEvaluatedCount = 0;
 let finalScore = 0;
 let pageCount = 0;
+
+const ignoreTerms = ['global+development']
+
+const shouldSkipUrl = (url) => {
+  let skipUrl = false;
+  for (term of ignoreTerms) {
+    if (url.toLowerCase().includes(term)) {
+      skipUrl = true;
+      break;
+    }
+  }
+  return skipUrl;
+  
+}
 
 const evaluatePage = ({ pageResults, title, tag }) => {
 
@@ -22,7 +35,7 @@ const evaluatePage = ({ pageResults, title, tag }) => {
         : "NEGATIVE";
 
   if (sentimentScore !== 0) {
-    console.log(`${sentimentResult}: ${title}`);    
+    console.log(`${sentimentResult}: ${title}`);
   }
 
   pageResults.push({ tag, text: textNoramaliser.normalise(title), sentiment: sentimentResult });
@@ -49,24 +62,34 @@ const self = (module.exports = {
     }
 
     const dom = new jsdom.JSDOM(response);
-    const links = dom.window.document.querySelectorAll("a");    
+    const links = dom.window.document.querySelectorAll("a");
+  
     const pageResults = [];
 
     for (let link of links) {
-      
-      if (link.href.startsWith(baseUrl) && !pagesScanned.includes(link.href)) {
-        
-        pagesScanned.push(link.href);
+
+      const url = link.href;
+
+      if (url.startsWith(baseUrl) &&
+        !pagesScanned.includes(url)
+      ) {
+
+        pagesScanned.push(url);
         pageUrlsCount++;
 
-        const response = await readerResource.getArticle(link.href);
+        //skip urls with certain keywords
+        if (shouldSkipUrl(url)) {
+          continue;
+        }
+      
+        const response = await readerResource.getArticle(url);
         const dom = new jsdom.JSDOM(response);
         const title = dom.window.document.title;
         const titleLower = title.toLowerCase();
 
         tags.forEach(tag => {
 
-          if (tag === '*') {            
+          if (tag === '*') {
             evaluatePage({ pageResults, title, tag: 'all' });
           } else if (titleLower.includes(tag)) {
             console.log(`Tag match [${tag}] with title ${title}`);
