@@ -9,6 +9,25 @@ let pagesEvaluatedCount = 0;
 let finalScore = 0;
 let pageCount = 0;
 
+const evaluatePage = ({ pageResults, title, tag }) => {
+
+  pagesEvaluatedCount++;
+
+  const sentimentScore = sentimentReader.getSentiment(title);
+  const sentimentResult =
+    sentimentScore > 0
+      ? "POSITIVE"
+      : sentimentScore === 0
+        ? "NEUTRAL"
+        : "NEGATIVE";
+
+  if (sentimentScore !== 0) {
+    console.log(`${sentimentResult}: ${title}`);    
+  }
+
+  pageResults.push({ tag, text: textNoramaliser.normalise(title), sentiment: sentimentResult });
+}
+
 const self = (module.exports = {
 
   readPage: async ({ baseUrl, pageUrl, tags }) => {
@@ -30,57 +49,41 @@ const self = (module.exports = {
     }
 
     const dom = new jsdom.JSDOM(response);
-    const links = dom.window.document.querySelectorAll("a");
+    const links = dom.window.document.querySelectorAll("a");    
     const pageResults = [];
-    
-    for (let link of links) {    
+
+    for (let link of links) {
       
-      if (link.href.startsWith(baseUrl) && !pagesScanned.includes(link)) {
+      if (link.href.startsWith(baseUrl) && !pagesScanned.includes(link.href)) {
+
+        console.log('test ', link.href);
+
         pagesScanned.push(link.href);
         pageUrlsCount++;
-        
+
         const response = await readerResource.getArticle(link.href);
         const dom = new jsdom.JSDOM(response);
         const title = dom.window.document.title;
         const titleLower = title.toLowerCase();
 
         tags.forEach(tag => {
-          
-          if (titleLower.includes(tag)) {
 
+          if (tag === '*') {            
+            evaluatePage({ pageResults, title, tag: 'all' });
+          } else if (titleLower.includes(tag)) {
             console.log(`Tag match [${tag}] with title ${title}`);
-
-            pagesEvaluatedCount++;
-  
-            const sentimentScore = sentimentReader.getSentiment(title);
-            const sentimentResult =
-              sentimentScore > 0
-                ? "POSITIVE"
-                : sentimentScore === 0
-                  ? "NEUTRAL"
-                  : "NEGATIVE";
-            
-            if (sentimentScore !== 0) {
-              console.log(sentimentResult);            
-              console.log(
-                `Pages Evaluated ${pagesEvaluatedCount}. Accumulated score ${finalScore}`
-              );
-            }
-              
-            pageResults.push({ tag, text: textNoramaliser.normalise(title), sentiment: sentimentResult });
-
+            evaluatePage({ pageResults, title, tag });
           }
 
           readerResource.writeToFile(pageResults, pageCount);
-
         })
 
         console.log(
-          `URLS processed: page ${pageUrlsCount} total ${pagesScanned.length}`
+          `Page ${pageCount} page URLS ${pageUrlsCount} total URLS ${pagesScanned.length}`
         );
       }
     }
-    
+
     console.log(`Overall score for ${tags.join(" ")} is ${finalScore}`);
     console.log(
       `Overall sentiment for ${tags.join(" ")} is ${finalScore > 0 ? "POSITIVE" : finalScore === 0 ? "NEUTRAL" : "NEGATIVE"

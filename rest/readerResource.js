@@ -12,10 +12,11 @@ module.exports = {
     if (!fs.existsSync(BASE_DIR)) {
       fs.mkdirSync(BASE_DIR);
 
-      tags.forEach(tag => {        
-        fs.mkdirSync(`${BASE_DIR}/${tag}`);
-        fs.mkdirSync(`${BASE_DIR}/${tag}/pos`);
-        fs.mkdirSync(`${BASE_DIR}/${tag}/neg`);      
+      tags.forEach(tag => {  
+        const tagDir = tag === '*' ? 'all' : tag;      
+        fs.mkdirSync(`${BASE_DIR}/${tagDir}`);
+        fs.mkdirSync(`${BASE_DIR}/${tagDir}/pos`);
+        fs.mkdirSync(`${BASE_DIR}/${tagDir}/neg`);      
       })
       
     }
