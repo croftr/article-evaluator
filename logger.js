@@ -1,12 +1,24 @@
-const winston = require("winston");
+const { createLogger, format, transports } = require('winston');
+const { combine, timestamp, label, printf, colorize } = format;
 
 const level = process.env.LOG_LEVEL || 'debug';
 
-const logger = winston.createLogger({
-    level: 'info',
+const myFormat = printf(({ level, message, label, timestamp }) => {
+    return `${timestamp} ${level}: ${message}`;
+});
+
+format.colorize();
+
+const logger = createLogger({    
+    format: combine(
+        colorize(),
+        timestamp(),
+        myFormat,        
+    ),
+    level,
     transports: [
-        new winston.transports.Console(),
-        new winston.transports.File({ filename: 'combined.log' })
+        new transports.Console(),
+        new transports.File({ filename: 'combined.log' })
     ]
 });
 

@@ -6,12 +6,10 @@ var logger = require('../logger');
 
 router.get('/', function(req, res, next) {  
 
-  logger.info('testing 124 ')
-  
   const tags = req.query.tags ? req.query.tags.split(',') : [];
-  console.log('Provided tags are ', tags);
+  logger.info('Provided tags are ', tags);
 
-  // reader.readDom({ baseUrl: "https://www.theguardian.com", pageUrl: "https://www.theguardian.com/world", tags });  
+  reader.readDom({ baseUrl: "https://www.theguardian.com", pageUrl: "https://www.theguardian.com/world", tags });  
   res.send('respond with read status');  
 });
 

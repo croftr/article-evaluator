@@ -3,6 +3,8 @@ const readerResource = require("../rest/readerResource");
 const sentimentReader = require("../analyze/sentimentReader");
 const textNoramaliser = require("../utils/textNormaliser.js")
 
+var logger = require('../logger');
+
 const pagesScanned = [];
 let pagesEvaluatedCount = 0;
 let finalScore = 0;
@@ -35,7 +37,7 @@ const evaluatePage = ({ pageResults, title, tag }) => {
         : "NEGATIVE";
 
   if (sentimentScore !== 0) {
-    console.log(`${sentimentResult}: ${title}`);
+    logger.info(`${sentimentResult}: ${title}`);
   }
 
   pageResults.push({ tag, text: textNoramaliser.normalise(title), sentiment: sentimentResult });
@@ -47,7 +49,7 @@ const self = (module.exports = {
     let pageUrlsCount = 0;
     pageCount++;
 
-    console.log(
+    logger.info(
       `Page No ${pageCount}: Scanning from ${pageUrl} for keywords ${tags.join(
         ","
       )}`
@@ -92,21 +94,21 @@ const self = (module.exports = {
           if (tag === '*') {
             evaluatePage({ pageResults, title, tag: 'all' });
           } else if (titleLower.includes(tag)) {
-            console.log(`Tag match [${tag}] with title ${title}`);
+            logger.info(`Tag match [${tag}] with title ${title}`);
             evaluatePage({ pageResults, title, tag });
           }
 
           readerResource.writeToFile(pageResults, pageCount);
         })
 
-        console.log(
+        logger.debug(
           `Page ${pageCount} page URLS ${pageUrlsCount} total URLS ${pagesScanned.length}`
         );
       }
     }
 
-    console.log(`Overall score for ${tags.join(" ")} is ${finalScore}`);
-    console.log(
+    logger.info(`Overall score for ${tags.join(" ")} is ${finalScore}`);
+    logger.info(
       `Overall sentiment for ${tags.join(" ")} is ${finalScore > 0 ? "POSITIVE" : finalScore === 0 ? "NEUTRAL" : "NEGATIVE"
       }`
     );
