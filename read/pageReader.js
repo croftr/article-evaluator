@@ -107,12 +107,8 @@ const self = (module.exports = {
       }
     }
 
-    logger.info(`Overall score for ${tags.join(" ")} is ${finalScore}`);
-    logger.info(
-      `Overall sentiment for ${tags.join(" ")} is ${finalScore > 0 ? "POSITIVE" : finalScore === 0 ? "NEUTRAL" : "NEGATIVE"
-      }`
-    );
-
+    logger.info(`Overall score for page ${pageCount} using tags ${tags.join(" ")} is ${finalScore}`);
+    
     return pagesScanned;
   },
   readDom: async ({ baseUrl, pageUrl, tags }) => {
