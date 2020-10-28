@@ -6,9 +6,9 @@ const textNoramaliser = require("../utils/textNormaliser.js")
 var logger = require('../logger');
 
 const pagesScanned = [];
+const pagesVisited = [];
 let pagesEvaluatedCount = 0;
 let finalScore = 0;
-let pageCount = 0;
 
 const ignoreTerms = ['global+development']
 
@@ -21,7 +21,6 @@ const shouldSkipUrl = (url) => {
     }
   }
   return skipUrl;
-  
 }
 
 const evaluatePage = ({ pageResults, title, tag }) => {
@@ -43,29 +42,45 @@ const evaluatePage = ({ pageResults, title, tag }) => {
   pageResults.push({ tag, text: textNoramaliser.normalise(title), sentiment: sentimentResult });
 }
 
+const collectPageLinks = async ({ pageUrl }) => {
+
+  let response;
+  try {
+    response = await readerResource.getArticle(pageUrl);
+  } catch (e) {
+    console.error(`Failed to read from url ${pageUrl}` + e.message);
+    return [];
+  }
+
+  const virtualConsole = new jsdom.VirtualConsole();  
+  virtualConsole.sendTo(console, {omitJSDOMErrors: true});
+  virtualConsole.on("error", () => {  });
+  virtualConsole.on("warn", () => {  });
+  virtualConsole.sendTo({});
+  const dom = new jsdom.JSDOM(response, {});
+  const links = dom.window.document.querySelectorAll("a");
+
+  return links;
+}
+
 const self = (module.exports = {
 
   readPage: async ({ baseUrl, pageUrl, tags }) => {
-    let pageUrlsCount = 0;
-    pageCount++;
 
-    logger.info(
-      `Page No ${pageCount}: Scanning from ${pageUrl} for keywords ${tags.join(
-        ","
-      )}`
-    );
+    logger.info("---------------------------------------------NEW PAGE-----------------------------------------------------");
+    logger.info("Scanning page " + pageUrl);
 
-    let response;
-    try {
-      response = await readerResource.getArticle(pageUrl);
-    } catch (e) {
-      console.error(`Failed to read from url ${pageUrl}` + e.message);
-      throw e;
+    if (pagesScanned.includes(pageUrl)) {
+      logger.info('Already scanned url ' + pageUrl);
+      return;
     }
 
-    const dom = new jsdom.JSDOM(response);
-    const links = dom.window.document.querySelectorAll("a");
+    pagesScanned.push(pageUrl);
   
+    let pageUrlsCount = 0;
+
+    const links = await collectPageLinks({ pageUrl });
+
     const pageResults = [];
 
     for (let link of links) {
@@ -73,17 +88,17 @@ const self = (module.exports = {
       const url = link.href;
 
       if (url.startsWith(baseUrl) &&
-        !pagesScanned.includes(url)
+        !pagesVisited.includes(url)
       ) {
 
-        pagesScanned.push(url);
+        pagesVisited.push(url);
         pageUrlsCount++;
 
         //skip urls with certain keywords
         if (shouldSkipUrl(url)) {
           continue;
         }
-      
+
         const response = await readerResource.getArticle(url);
         const dom = new jsdom.JSDOM(response);
         const title = dom.window.document.title;
@@ -98,18 +113,20 @@ const self = (module.exports = {
             evaluatePage({ pageResults, title, tag });
           }
 
-          readerResource.writeToFile(pageResults, pageCount);
+          readerResource.writeToFile(pageResults, pagesScanned.length);
         })
 
         logger.debug(
-          `Page ${pageCount} page URLS ${pageUrlsCount} total URLS ${pagesScanned.length}`
+          `Page [${pagesScanned.length}] [${pageUrl}] URLS [${pageUrlsCount}] total [${pagesVisited.length}]`
         );
+
+        // await self.readPage({ baseUrl, pageUrl: url, tags });
       }
     }
 
-    logger.info(`Overall score for page ${pageCount} using tags ${tags.join(" ")} is ${finalScore}`);
-    
-    return pagesScanned;
+    logger.info(`Overall score for page ${pagesScanned.length} using tags ${tags.join(" ")} is ${finalScore}`);
+
+    return pagesVisited;
   },
   readDom: async ({ baseUrl, pageUrl, tags }) => {
     readerResource.setUp(tags);
