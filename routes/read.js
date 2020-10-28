@@ -7,10 +7,19 @@ var logger = require('../logger');
 router.get('/', function(req, res, next) {  
 
   const tags = req.query.tags ? req.query.tags.split(',') : [];
-  logger.info('Provided tags are ', tags);
+  const baseUrl = req.query.baseUrl;
+  const pageUrl = req.query.pageUrl;
 
-  reader.readDom({ baseUrl: "https://www.theguardian.com", pageUrl: "https://www.theguardian.com/world", tags });  
-  res.send('respond with read status');  
+  logger.info(`baseUrl ${baseUrl} pageUrl ${pageUrl} tags ${req.query.tags}`);
+
+  if (!baseUrl || !pageUrl) {
+    res.status(400).send({ message: 'You must provide a baseUrl and a pageUrl'})
+  } else {    
+    reader.readDom({ baseUrl, pageUrl, tags });  
+    res.send({ message: `Scanning articles from baseUrl ${baseUrl} pageUrl ${pageUrl} using tags ${req.query.tags}`});  
+  }
+
+  
 });
 
 module.exports = router;

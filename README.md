@@ -6,7 +6,11 @@ npm start
 
 To kick off the evaluation process hit this url and provide the tags you want it to match on. e.g.
 
-http://localhost:3000/read?tags=food,trump,europe,virus,covid,sport,uk,police,politics,religion,drug.
+With tags
+http://localhost:3000/read?tags=food,trump,europe,virus,covid,sport,uk,police,politics,religion,drug&baseUrl=https://www.theguardian.com&pageUrl=https://www.theguardian.com/world
+
+Without tags
+http://localhost:3000/read?tags=*&baseUrl=https://www.theguardian.com&pageUrl=https://www.theguardian.com/world
 
 ------------------
 JSDOM annoying stylesheet parsing error
