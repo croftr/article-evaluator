@@ -71,7 +71,7 @@ const self = (module.exports = {
     logger.info("Scanning page " + pageUrl);
 
     if (pagesScanned.includes(pageUrl)) {
-      logger.info('Already scanned url ' + pageUrl);
+      logger.info('SKIP: Already scanned page ' + pageUrl);
       return;
     }
 
@@ -96,6 +96,7 @@ const self = (module.exports = {
 
         //skip urls with certain keywords
         if (shouldSkipUrl(url)) {
+          logger.info('SKIP: Already visited url ' + pageUrl);
           continue;
         }
 
