@@ -3,11 +3,34 @@ var params = require('../params');
 
 const findArticleDate = (document) => {             
 
-    const metaDate = document.querySelector('meta[property="article:published_time"]');
+    let articleDate;
+
+    const meta = document.querySelectorAll('script[type="application/ld+json"]');
     
-    if (metaDate && metaDate.content) {
-        return new Date(metaDate.content);
-    }
+    meta.forEach(element => {
+        
+        const text = element.innerHTML;
+        const metaArray = JSON.parse(text);
+
+        if (Array.isArray(metaArray)) {
+            console.log('ggggg >>>>>>>>>> ');
+            metaArray.forEach(i => {
+                // console.log('got array line ', i); 
+                console.log('got pub date!!! ', i.datePublished);
+                 if (i.datePublished) {
+                     //todo break out of for loop
+                    articleDate = i.datePublished;
+                    return articleDate;
+                 }                
+            } );           
+        }        
+    });
+    
+    // const metaDate = document.querySelector('meta[property="article:published_time"]');
+    
+    // if (metaDate && metaDate.content) {
+    //     return new Date(metaDate.content);
+    // }
 }
 
 module.exports = {
