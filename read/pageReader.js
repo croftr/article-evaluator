@@ -2,6 +2,8 @@ const jsdom = require("jsdom");
 const readerResource = require("../rest/readerResource");
 const sentimentReader = require("../analyze/sentimentReader");
 const textNoramaliser = require("../utils/textNormaliser.js")
+const dateUtils = require('../utils/dateUtils.js')
+const urlUtils = require('../utils/urlUtils.js')
 
 var logger = require('../logger');
 
@@ -81,16 +83,18 @@ const self = (module.exports = {
 
     const links = await collectPageLinks({ pageUrl });
 
+    logger.info('Got '+ links.length + ' links for page ')
+
     const pageResults = [];
 
     for (let link of links) {
+    
+      const url = urlUtils.makeAbsolute({ baseUrl, urlToCheck: link.href });      
 
-      const url = link.href;
-
-      if (url.startsWith(baseUrl) &&
+      if (urlUtils.isSameOrigin({ baseUrl, urlToCheck: url }) &&  
         !pagesVisited.includes(url)
       ) {
-
+        
         pagesVisited.push(url);
         pageUrlsCount++;
 
@@ -102,20 +106,25 @@ const self = (module.exports = {
 
         const response = await readerResource.getArticle(url);
         const dom = new jsdom.JSDOM(response);
-        const title = dom.window.document.title;
-        const titleLower = title.toLowerCase();
+                        
+        if (dateUtils.isRecentArticle(dom.window.document)) {
 
-        tags.forEach(tag => {
+          const title = dom.window.document.title;
+          const titleLower = title.toLowerCase();
 
-          if (tag === '*') {
-            evaluatePage({ pageResults, title, tag: 'all' });
-          } else if (titleLower.includes(tag)) {
-            logger.info(`Tag match [${tag}] with title ${title}`);
-            evaluatePage({ pageResults, title, tag });
-          }
+          tags.forEach(tag => {
 
-          readerResource.writeToFile(pageResults, pagesScanned.length);
-        })
+            if (tag === '*') {
+              evaluatePage({ pageResults, title, tag: 'all' });
+            } else if (titleLower.includes(tag)) {
+              logger.info(`Tag match [${tag}] with title ${title}`);
+              evaluatePage({ pageResults, title, tag });
+            }
+  
+            readerResource.writeToFile(pageResults, pagesScanned.length);
+          })
+
+        }
 
         logger.debug(
           `Page [${pagesScanned.length}] [${pageUrl}] URLS [${pageUrlsCount}] total [${pagesVisited.length}]`
