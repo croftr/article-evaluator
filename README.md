@@ -11,6 +11,7 @@ http://localhost:3000/read?tags=food,trump,europe,virus,covid,sport,uk,police,po
 
 Without tags
 http://localhost:3000/read?tags=*&baseUrl=https://www.theguardian.com&pageUrl=https://www.theguardian.com/world
+http://localhost:3000/read?tags=*&baseUrl=https://news.sky.com&pageUrl=https://news.sky.com/
 
 ------------------
 JSDOM annoying stylesheet parsing error
