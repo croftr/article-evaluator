@@ -50,10 +50,9 @@ const findArticleDate = (document) => {
             }                        
         }
     }
-    logger.debug('Published date: ' + articleDate); 
+    // logger.debug('Published date: ' + articleDate); 
     return articleDate;
 };
-
 
 module.exports = {
     /**     

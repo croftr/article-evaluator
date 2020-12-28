@@ -51,6 +51,14 @@ module.exports = {
     return `files written = ${totalFiles}`;
   },
 
+  serializeObject: (objectToWrite, fileName) => {
+    const writeStream = fs.createWriteStream(
+      `./results/${fileName}.txt`
+    );
+    writeStream.write(JSON.stringify(objectToWrite));
+    writeStream.end();
+  },
+
   getDirLength: async (dir) => {
     return (await readdir(dir)).length;
   },
