@@ -128,7 +128,7 @@ const self = (module.exports = {
             evaluatePage({ pageResults, title, tag });
           }
 
-          readerResource.writeToFile(pageResults, pagesScanned.length);
+          // readerResource.writeToFile(pageResults, pagesScanned.length);
         })
 
       }

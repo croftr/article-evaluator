@@ -1,6 +1,7 @@
 const fetch = require("node-fetch");
 const fs = require("fs");
 const util = require("util");
+var logger = require('../logger');
 
 const readdir = util.promisify(fs.readdir);
 const rename = util.promisify(fs.rename);
@@ -22,8 +23,15 @@ module.exports = {
     }
   },
   getArticle: async (url) => {
-    const response = await fetch(url);
-    const body = await response.text();
+
+    let body = '';
+    try {
+      const response = await fetch(url);
+      body = await response.text();
+    } catch (e) {
+      logger.error('error calling ' + url + ' ' + e)
+    }
+    
     return body;
   },
   writeToFile: async (results, pageCount) => {
